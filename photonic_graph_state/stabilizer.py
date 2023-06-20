@@ -101,7 +101,7 @@ class Stabilizer:
                 self.tab = list[0]
                 self.signvector = list[1]
         else:
-            self.graph_state()
+            self.graph_state(edgelist = edgelist)
 
     def square(self):
         toggler = True
@@ -675,6 +675,7 @@ class Stabilizer:
         """
         self.tab = np.flip(self.tab,axis=0)
         self.signvector = np.flip(self.signvector,axis=0)
+
 def grapher(edgelist):
     """
     Function that can graph a graph state provided an edgelist

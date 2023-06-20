@@ -1,4 +1,5 @@
 from stabilizer import *
+import matplotlib.pyplot as plt
 
 def rref(state):
     N=state.size
@@ -61,7 +62,29 @@ def rref(state):
                     state.row_add(KU+1,k)
             NL+=1
             KU+=2
-            
+
+def heightfunction(state):
+    rref(state)
+    state.gaussian()
+    gauss = state.gauss
+    leftmost = []
+    for i in range(state.size):
+        for j in range(state.size):
+            if gauss[i,j]!=0:
+                leftmost.append(j+1)
+                break
+    height = []
+    for i in range(state.size+1):
+        count = sum(j > i for j in leftmost)
+        height.append(state.size-i-count)
+    index = []
+    for i in range(state.size+1):
+        index.append(i)
+    plt.plot(index,height,'b-')
+    plt.xlabel('x')
+    plt.ylabel('h(x)')
+    plt.show()
+
 def remove_sign(stabs):
     for i in range(len(stabs)):
         stabs[i] = stabs[i].lstrip('-')
