@@ -1,4 +1,5 @@
 from stabilizer import *
+import math
 import matplotlib.pyplot as plt
 
 def rref(state):
@@ -77,13 +78,27 @@ def heightfunction(state):
     for i in range(state.size+1):
         count = sum(j > i for j in leftmost)
         height.append(state.size-i-count)
+    return height
+
+def plot_height(state):
+    height = heightfunction(state)
     index = []
     for i in range(state.size+1):
         index.append(i)
-    plt.plot(index,height,'b-')
+    tickers = range(math.floor(min(height)), math.ceil(max(height))+1)
+    plt.grid(color = 'blue', linewidth = 0.5)
+    plt.plot(index,height,color='blue')
+    plt.scatter(index,height,color='blue')
+    plt.yticks(tickers)
+    plt.title('Target Height Function')
     plt.xlabel('x')
     plt.ylabel('h(x)')
     plt.show()
+
+def num_emitters(state):
+    height = heightfunction(state)
+    emitters = max(height)
+    return emitters
 
 def remove_sign(stabs):
     for i in range(len(stabs)):
