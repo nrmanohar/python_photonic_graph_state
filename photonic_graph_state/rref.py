@@ -82,13 +82,13 @@ def heightfunction(state):
 
 def plot_height(state):
     height = heightfunction(state)
-    index = []
+    x_val = []
     for i in range(state.size+1):
-        index.append(i)
+        x_val.append(i)
     tickers = range(math.floor(min(height)), math.ceil(max(height))+1)
     plt.grid(color = 'blue', linewidth = 0.5)
-    plt.plot(index,height,color='blue')
-    plt.scatter(index,height,color='blue')
+    plt.plot(x_val,height,color='blue')
+    plt.scatter(x_val,height,color='blue')
     plt.yticks(tickers)
     plt.title('Target Height Function')
     plt.xlabel('x')
