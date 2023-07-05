@@ -356,6 +356,7 @@ class Stabilizer:
                 self.clifford('h', q2)
         else:
             print("Something went wrong, make sure you inputted a valid type. Valid types are 'H' for Hadamard, 'S' for the phase gate, 'CNOT' for the Control Not, 'CZ' for the Control Z.")
+        self.gaussian()
     def report(self):
         """
         Prints the tableau and the signvector
