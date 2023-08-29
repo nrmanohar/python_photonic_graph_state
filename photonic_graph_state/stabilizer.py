@@ -356,7 +356,6 @@ class Stabilizer:
                 self.clifford('h', q2)
         else:
             print("Something went wrong, make sure you inputted a valid type. Valid types are 'H' for Hadamard, 'S' for the phase gate, 'CNOT' for the Control Not, 'CZ' for the Control Z.")
-        self.gaussian()
     def report(self):
         """
         Prints the tableau and the signvector
@@ -676,6 +675,15 @@ class Stabilizer:
         """
         self.tab = np.flip(self.tab,axis=0)
         self.signvector = np.flip(self.signvector,axis=0)
+    def clone(self):
+        """
+        Generates a copy of the stabilizer state
+
+        """
+        newstab = self.stabilizers()
+        int = self.size
+        state = Stabilizer(n=int,stabs=newstab)
+        return state
 
 def grapher(edgelist):
     """

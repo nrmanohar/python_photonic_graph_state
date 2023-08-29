@@ -20,8 +20,13 @@ def rref(state):
         if len(distinct_pauli)==1:
             if 'I' in distinct_pauli:
                 identity = True
-        elif len(distinct_pauli)<=2:
-            oneitem = True
+            else:
+                oneitem = True
+        elif len(distinct_pauli)==2:
+            if 'I' in distinct_pauli:
+                oneitem = True
+            else:
+                twoitem = True
         else:
             twoitem = True
         if identity:
