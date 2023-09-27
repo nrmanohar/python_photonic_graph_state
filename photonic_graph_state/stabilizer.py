@@ -219,7 +219,7 @@ class Stabilizer:
                     str = str+"Y"
             self.__stab.append(str)
         return self.__stab
-    def new_stab(self,size=None,newstabs=None):
+    def new_stab(self,size=None,newstabs=None, ignore_commute = False):
         """
         Resets the stabilizer and new tableau associated with it
 
@@ -275,7 +275,7 @@ class Stabilizer:
             list = self.tableau()
             self.tab = list[0]
             self.signvector = list[1]
-        while not self.commuter():
+        while not self.commuter() and not ignore_commute:
             print("Invalid Inputs, Stabilizers do not commute")
             n = int(input("Number of Qubits "))
             stabs = input("Stabilizers ")
@@ -323,6 +323,8 @@ class Stabilizer:
         elif type.lower() == 'cnot':
             if q2 == None:
                 print('Recall method and specify second qubit')
+            elif q1 == q2:
+                pass
             else:
                 for i in range(self.size):
                     self.tab[i,q2] = (self.tab[i,q1]+self.tab[i,q2])%2
@@ -356,6 +358,60 @@ class Stabilizer:
                 self.clifford('h', q2)
         else:
             print("Something went wrong, make sure you inputted a valid type. Valid types are 'H' for Hadamard, 'S' for the phase gate, 'CNOT' for the Control Not, 'CZ' for the Control Z.")
+    
+    def row_commute(self, stab1, stab2):
+        if len(stab1)!=len(stab2):
+            print("Your stabilizers aren't of same length")
+            return
+        stab1 = stab1.lstrip('-')
+        stab2 = stab2.lstrip('-')
+        toggler = 0
+        for i in range(len(stab1)):
+            if stab1[i] != 'I' and stab2[i] != 'I' and stab1[i] != stab2[i]:
+                toggler+= 1
+        if toggler%2 == 0:
+            return True
+        else:
+            return False
+    
+    def measurement(self, stabilizers, outcomes=None):
+        try:
+            stabilizers = stabilizers.split(',')
+        except:
+            stabilizers = list(stabilizers)
+
+        for i in range(len(stabilizers)):
+            if len(stabilizers[i])!= self.size:
+                print('Stabilizers are wrong, inaccurate size')
+                return
+
+        if outcomes == None:
+            outcomes = [0 for i in range(len(stabilizers))]
+        stabs = self.stabilizers()
+        for i in range(len(stabilizers)):
+            for j in range(len(stabs)):
+                if not self.row_commute(stabs[j],stabilizers[i]):
+                    index = j
+                    break
+            try:
+                for k in range(index+1,len(stabs)):
+                    if not self.row_commute(stabs[k],stabilizers[i]):
+                        self.row_add(index,k)
+            except:
+                pass
+
+            stabs = self.stabilizers()
+            if outcomes[i]==1:
+                stabilizers[i] = '-'+stabilizers[i]
+            try:
+                stabs[index]=stabilizers[i]
+            except:
+                pass
+            self.new_stab(self.size,stabs,True)
+
+
+
+
     def report(self):
         """
         Prints the tableau and the signvector
@@ -433,9 +489,7 @@ class Stabilizer:
         toggler = (1-1*np.real(toggler))/2
         self.signvector[row2]=(self.signvector[row1]+self.signvector[row2]+toggler)%2
         for i in range(2*self.size):
-            self.tab[row2,i]=(self.tab[row2,i]+self.tab[row1,i])%2
-     
-            
+            self.tab[row2,i]=(self.tab[row2,i]+self.tab[row1,i])%2     
 
     def circuit_builder(self):
         """
@@ -583,7 +637,7 @@ class Stabilizer:
 
     def stabilizer_measurement(self):
         """
-        A circuit t-o measure the associated stabilizers of this state
+        A circuit to measure the associated stabilizers of this state
 
         :return: A qiskit circuit for measureing stabilizer
         :rtype: QuantumCircuit
