@@ -314,12 +314,10 @@ class Stabilizer:
         :type q2: int
         """
         if type.lower() == 'h':
+            self.tab[:,[q1,q1+self.size]] = self.tab[:,[q1+self.size,q1]]
             for i in range(self.size):
-                alpha = self.tab[i,q1]
-                beta = self.tab[i,q1+self.size]
-                self.tab[i,q1]=beta
-                self.tab[i,q1+self.size]=alpha
-                self.signvector[i] = (self.signvector[i]+(alpha*beta))%2
+                if self.tab[i,q1]*self.tab[i,q1+self.size]==1:
+                    self.signvector[i]=(self.signvector[i]+1)%2
         elif type.lower() == 'cnot':
             if q2 == None:
                 print('Recall method and specify second qubit')
@@ -464,32 +462,44 @@ class Stabilizer:
         Multiplies two stabilizers in the tableau together, specifying a new stabilizer, and puts them into the second row
 
         """
-        stabs=self.stabilizers()
-        stab1 = stabs[row1]
-        stab2 = stabs[row2]
-        stab1 = stab1.lstrip('-')
-        stab2 = stab2.lstrip('-')
-        phase = np.ones(self.size, dtype=complex)
-        for i in range(self.size):
-            if stab1[i]=='Z' and stab2[i]=="X":
-                phase[i]=np.complex(1j)*phase[i]
-            elif stab1[i]=='X' and stab2[i]=="Z":
-                phase[i]=np.complex(-1j)*phase[i]
-            elif stab1[i]=='Y' and stab2[i]=="Z":
-                phase[i]=np.complex(1j)*phase[i]
-            elif stab1[i]=='Z' and stab2[i]=="Y":
-                phase[i]=np.complex(-1j)*phase[i]
-            elif stab1[i]=='X' and stab2[i]=="Y":
-                phase[i]=np.complex(1j)*phase[i]
-            elif stab1[i]=='Y' and stab2[i]=="X":
-                phase[i]=np.complex(-1j)*phase[i]
-        toggler = 1
-        for i in range(self.size):
-            toggler = toggler*phase[i]
-        toggler = (1-1*np.real(toggler))/2
-        self.signvector[row2]=(self.signvector[row1]+self.signvector[row2]+toggler)%2
-        for i in range(2*self.size):
-            self.tab[row2,i]=(self.tab[row2,i]+self.tab[row1,i])%2     
+        if row1==row2:
+            pass
+        elif row1>= self.size or row2>=self.size:
+            pass
+        else:
+            phase_tracker = 1
+            for i in range(self.size):
+                if self.tab[row1,i]==0 and self.tab[row1,i+self.size]==0:
+                    pass
+                elif self.tab[row2,i]==0 and self.tab[row2,i+self.size]==0:
+                    self.tab[row2,i]=self.tab[row1,i]
+                    self.tab[row2,i+self.size]=self.tab[row1,i+self.size]
+                elif self.tab[row1,i]==self.tab[row2,i] and self.tab[row1,i+self.size]==self.tab[row2,i+self.size]:
+                    self.tab[row2,i] = 0
+                    self.tab[row2,i+self.size] = 0
+
+                else:
+                    if self.tab[row1,i]==0 and self.tab[row1,i+self.size]==1:
+                        if self.tab[row2,i]==1 and self.tab[row2,i+self.size]==0:
+                            phase_tracker = phase_tracker*np.complex(1j)
+                        else:
+                            phase_tracker = phase_tracker*np.complex(-1j)
+                    elif self.tab[row1,i]==1 and self.tab[row1,i+self.size]==0:
+                        if self.tab[row2,i]==0 and self.tab[row2,i+self.size]==1:
+                            phase_tracker = phase_tracker*np.complex(-1j)
+                        else:
+                            phase_tracker = phase_tracker*np.complex(1j)
+                    else:
+                        if self.tab[row2,i]==0 and self.tab[row2,i+self.size]==1:
+                            phase_tracker = phase_tracker*np.complex(1j)
+                        else:
+                            phase_tracker = phase_tracker*np.complex(-1j)
+                    self.tab[row2,i] = (self.tab[row2,i]+self.tab[row1,i])%2
+                    self.tab[row2,i+self.size] = (self.tab[row2,i+self.size]+self.tab[row1,i+self.size])%2
+        phase_tracker = (1-1*np.real(phase_tracker))/2
+        self.signvector[row2] = (self.signvector[row2]+phase_tracker)%2
+                
+
 
     def circuit_builder(self):
         """
